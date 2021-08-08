@@ -8,7 +8,24 @@ app = Flask(__name__)
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    username = "Tim"
+    return render_template("index.html",name=username)
+
+@app.route("/greet/<username>")
+def greeting(username):
+    return render_template("index.html", name=username)
+
+@app.route("/users/<int:uid>/profiles")
+def get_profile(uid):
+    #user = User.query.filter_by(id=uid).first()
+    user = get_single_user(uid) # fix to reflect other line
+    return render_template("user_profile.html", user=user)
+
+@app.route("/users/profiles")
+def list_users():
+    #list_of_users = User.query.all() 
+    list_of_users = get_all_users() # fix to reflect other line
+    return render_template("profile_list.html", users=list_of_users)
 
 @app.route("/users")
 def get_all_users():
@@ -51,3 +68,11 @@ def get_single_user(uid):
     out["body"] = select(uid)
     return out
 
+@app.route('/agent')
+def agent():
+    user_agent = request.headers.get("User-Agent")
+    return "<p>Your user agent is %s</p>" % user_agent
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template("404.html"), 404
