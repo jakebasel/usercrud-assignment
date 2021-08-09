@@ -1,10 +1,11 @@
 from flask import Flask, request, render_template
-from app.database import (
-    scan, insert,
-    deactivate_user, select
-)
+from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///mydb.db"
+db = SQLAlchemy(app)
+
+from app.database import User
 
 @app.route("/")
 def index():
@@ -18,13 +19,11 @@ def greeting(username):
 @app.route("/users/<int:uid>/profiles")
 def get_profile(uid):
     #user = User.query.filter_by(id=uid).first()
-    user = get_single_user(uid) # fix to reflect other line
     return render_template("user_profile.html", user=user)
 
 @app.route("/users/profiles")
 def list_users():
     #list_of_users = User.query.all() 
-    list_of_users = get_all_users() # fix to reflect other line
     return render_template("profile_list.html", users=list_of_users)
 
 @app.route("/users")
@@ -33,7 +32,7 @@ def get_all_users():
         "ok":True,
         "message":"Success"
     }
-    out["body"] = scan()
+    
     return out
 
 @app.route("/users", methods=["POST"])
@@ -56,7 +55,7 @@ def delete_user(uid):
         "ok":True,
         "message":"Success"
     }
-    deactivate_user(uid)
+    
     return out, 200
 
 @app.route("/users/<int:uid>", methods=["GET"])
@@ -65,7 +64,7 @@ def get_single_user(uid):
         "ok": True,
         "message":"Success"
     }
-    out["body"] = select(uid)
+    
     return out
 
 @app.route('/agent')
