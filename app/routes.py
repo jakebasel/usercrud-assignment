@@ -18,12 +18,12 @@ def greeting(username):
 
 @app.route("/users/<int:uid>/profiles")
 def get_profile(uid):
-    #user = User.query.filter_by(id=uid).first()
+    user = User.query.filter_by(id=uid).first()
     return render_template("user_profile.html", user=user)
 
 @app.route("/users/profiles")
 def list_users():
-    #list_of_users = User.query.all() 
+    list_of_users = User.query.all() 
     return render_template("profile_list.html", users=list_of_users)
 
 @app.route("/users")
@@ -32,7 +32,7 @@ def get_all_users():
         "ok":True,
         "message":"Success"
     }
-    
+    out["users"] = User.query.all()
     return out
 
 @app.route("/users", methods=["POST"])
@@ -42,11 +42,14 @@ def create_user():
         "message": "Success"
     }
     user_data = request.json
-    out["new_id"] = insert (
-        user_data.get("first_name"),
-        user_data.get("last_name"),
-        user_data.get("hobbies"),
+    db.session.add(
+        User(
+            first_name=user_data.get("first_name"),
+            last_name=user_data.get("last_name"),
+            hobbies=user_data.get("hobbies")
+        )
     )
+    db.session.commit()
     return out, 201
 
 @app.route("/users/<int:uid>",methods=["DELETE"])
@@ -55,7 +58,6 @@ def delete_user(uid):
         "ok":True,
         "message":"Success"
     }
-    
     return out, 200
 
 @app.route("/users/<int:uid>", methods=["GET"])
@@ -64,7 +66,7 @@ def get_single_user(uid):
         "ok": True,
         "message":"Success"
     }
-    
+    out["user"] = User.query.filter_by(first_name=uid).first()
     return out
 
 @app.route('/agent')
